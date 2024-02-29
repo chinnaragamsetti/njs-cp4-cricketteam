@@ -27,6 +27,15 @@ const initializeServer = async () => {
 
 initializeServer();
 
+const convertDbObjectToResponseObject = (dbObject) => {
+  return {
+    playerId: dbObject.player_id,
+    playerName: dbObject.player_name,
+    jerseyNumber: dbObject.jersey_number,
+    role: dbObject.role,
+  };
+};
+
 app.get("/players/", async (request, response) => {
   const getListQuery = `
     SELECT 
@@ -35,7 +44,9 @@ app.get("/players/", async (request, response) => {
     cricket_team;
     `;
   const teamList = await db.all(getListQuery);
-  response.send(teamList);
+  response.send(
+    teamList.map((eachPlayer) => convertDbObjectToResponseObject(eachPlayer))
+  );
 });
 
 app.get("/players/:playerId/", async (request, response) => {
@@ -51,7 +62,8 @@ app.get("/players/:playerId/", async (request, response) => {
     `;
   const playerData = await db.get(getPlayerQuery);
   // console.log(type(playerData));
-  response.send(playerData);
+
+  response.send(convertDbObjectToResponseObject(playerData));
 });
 
 app.post("/players/", async (request, response) => {
@@ -68,8 +80,8 @@ app.post("/players/", async (request, response) => {
     `;
   const dbResponse = await db.run(addPlayerQuery);
   // const playerId = dbResponse.lastId;
-  console.log("Player Added to Team");
-  response.send({ playerId: playerId });
+
+  response.send("Player Added to Team");
 });
 
 app.put("/players/:playerId/", async (request, response) => {
@@ -104,3 +116,4 @@ app.delete("/players/:playerId/", async (request, response) => {
 });
 
 module.exports = app;
+
